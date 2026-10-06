@@ -21,8 +21,8 @@
 <style>
 :root{--bg:#eef1f6;--surf:#fff;--ink:#17213f;--mut:#667089;--line:#dbe0ea;--pri:#17213f;--acc:#0f8b8d;--on:#fff;--done:#9aa3b8;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1426;--surf:#182038;--ink:#eef1fa;--mut:#9aa5c4;--line:#2a3452;--pri:#4fd1c5;--acc:#4fd1c5;--on:#0f1426;--done:#6b7494}}
-:root[data-theme="dark"]{--bg:#0f1426;--surf:#182038;--ink:#eef1fa;--mut:#9aa5c4;--line:#2a3452;--pri:#4fd1c5;--acc:#4fd1c5;--on:#0f1426;--done:#6b7494}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1426;--surf:#182038;--ink:#eef1fa;--mut:#9aa5c4;--line:#2a3452;--pri:#4fd1c5;--acc:#4fd1c5;--on:#0f1426;--done:#6b7494}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1426;--surf:#182038;--ink:#eef1fa;--mut:#9aa5c4;--line:#2a3452;--pri:#4fd1c5;--acc:#4fd1c5;--on:#0f1426;--done:#6b7494}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;line-height:1.7}
@@ -66,6 +66,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-with
 .box textarea{min-height:90px;resize:vertical}
 .box .r{display:flex;gap:8px;flex-wrap:wrap}
 .box .r input{flex:1;min-width:120px}
+.fl{flex:1;min-width:130px;display:flex;flex-direction:column;gap:3px;font-size:14px;font-weight:500;color:var(--ink)}
+.fl input{min-height:46px;border:1.5px solid var(--acc)!important;text-align:right}
+.box .r .go{flex:1 1 100%;min-height:44px}
 .go{background:var(--pri);color:var(--on);border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
 .imp{display:block;border:1px dashed var(--acc);border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-weight:500}
 .imp input{position:absolute;opacity:0;width:1px;height:1px}
@@ -221,7 +224,7 @@ const items=tasks.filter(t=>t.cat===view&&(!s||t.sub===s)).sort((a,b)=>a.done-b.
 const dn=items.filter(t=>t.done).length,pc=items.length?Math.round(dn/items.length*100):0;
 $.innerHTML=`<div class="top"><button class="back" aria-label="رجوع" id="bk">→</button><h2>${c.name}${c.tag?`<span class="tag">${c.tag}</span>`:''}</h2></div>`+
 (c.subs?`<div class="tabs" role="tablist">${c.subs.map(x=>`<button role="tab" aria-selected="${x.id===sub}" data-s="${x.id}">${x.name}</button>`).join('')}</div>`:'')+
-`<div class="pr"><div class="prh"><span>أنجزت ${dn} من ${items.length}</span><b>${pc}%</b></div><div class="bar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100" aria-label="نسبة الإنجاز"><i style="width:${pc}%"></i></div></div><div class="box"><input id="ti" placeholder="العنوان" aria-label="العنوان"><div class="r"><input id="dt" type="date" aria-label="التاريخ"><input id="tm" type="time" aria-label="الوقت"><button class="go" id="ad">إضافة</button></div></div><button class="bell" id="cal"><span>📅</span><span>إضافة مهام هذا القسم إلى تقويم الجوال<small>مع تنبيه قبل الموعد بأسبوع وبيوم وبساعة.</small></span></button>`+
+`<div class="pr"><div class="prh"><span>أنجزت ${dn} من ${items.length}</span><b>${pc}%</b></div><div class="bar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100" aria-label="نسبة الإنجاز"><i style="width:${pc}%"></i></div></div><div class="box"><input id="ti" placeholder="العنوان" aria-label="العنوان"><div class="r"><label class="fl"><span>📅 التاريخ</span><input id="dt" type="date"></label><label class="fl"><span>🕘 الوقت</span><input id="tm" type="time"></label><button class="go" id="ad">إضافة</button></div></div><button class="bell" id="cal"><span>📅</span><span>إضافة مهام هذا القسم إلى تقويم الجوال<small>مع تنبيه قبل الموعد بأسبوع وبيوم وبساعة.</small></span></button>`+
 (view==='train'?`<div class="box"><label class="imp">استيراد جدول البرامج من ملف Excel<input type="file" id="fx" accept=".xlsx,.xls"></label><p class="hint">الصف الأول عناوين الأعمدة: اسم البرنامج، التاريخ، الوقت. تُضاف البرامج إلى التبويب المفتوح (ميسر رئيسي أو ميسر مشارك).</p>${msg?`<p class="hint" role="status"><b>${msg}</b></p>`:''}</div>`:'')+
 (items.length?items.map(t=>`<div class="item ${t.done?'done':''}"><input type="checkbox" data-k="${t.id}" ${t.done?'checked':''} aria-label="إنجاز"><div class="t"><b>${esc(t.title)}</b>${t.date?`<span>${new Date(t.date+'T00:00').toLocaleDateString('ar-SA',{day:'numeric',month:'long',year:'numeric'})}${t.time?' الساعة '+t.time:''}</span>`:''}</div><button class="del" data-d="${t.id}" aria-label="حذف">×</button></div>`).join(''):`<div class="empty">لا توجد مهام بعد. اكتب عنوانًا وأضف أول مهمة.</div>`)+
 `<h3>ملاحظات</h3><div class="box"><textarea id="nt" placeholder="اكتب ملاحظاتك عن هذا القسم" aria-label="ملاحظات">${esc(notes[view]||'')}</textarea></div>`;
