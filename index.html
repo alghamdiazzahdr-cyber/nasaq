@@ -67,6 +67,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-with
 .box .r{display:flex;gap:8px;flex-wrap:wrap}
 .box .r input{flex:1;min-width:120px}
 .fl{flex:1;min-width:130px;display:flex;flex-direction:column;gap:3px;font-size:14px;font-weight:500;color:var(--ink)}
+.fl input[type=date]:not(.has):not(:focus)::-webkit-datetime-edit{opacity:0}
 .fl input{min-height:46px;border:1.5px solid var(--acc)!important;text-align:right}
 .box .r .go{flex:1 1 100%;min-height:44px}
 .go{background:var(--pri);color:var(--on);border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
@@ -177,11 +178,15 @@ L.push('BEGIN:VEVENT','UID:'+t.id+'@nasaq','DTSTAMP:'+f(new Date()),'DTSTART:'+f
 [['-P7D','موعدها بعد أسبوع'],['-P1D','موعدها غدًا'],['-PT1H','موعدها بعد ساعة']].forEach(a=>L.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+ie('تذكير: '+t.title+' '+a[1]),'TRIGGER:'+a[0],'END:VALARM'));
 L.push('END:VEVENT')});
 L.push('END:VCALENDAR');return L.join('\r\n')}
-function dl(list,name){const l=list.filter(t=>t.date&&!t.done);
+async function dl(list,name){const l=list.filter(t=>t.date&&!t.done);
 if(!l.length){toast('لا توجد مهام غير منجزة بتاريخ لإضافتها إلى التقويم.');return}
-const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics(l)],{type:'text/calendar;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+const n=new Date(),fn=name.replace(/\.ics$/,'')+'-'+p2(n.getHours())+p2(n.getMinutes())+p2(n.getSeconds())+'.ics';
+const blob=new Blob([ics(l)],{type:'text/calendar;charset=utf-8'});
+try{const f=new File([blob],fn,{type:'text/calendar'});
+if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'مهام نسق'});toast('اختر تطبيق «التقويم» لإضافة المهام وتنبيهاتها.');return}}
+catch(e){if(e&&e.name==='AbortError')return}
+const a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),6e4);
 toast('تم تجهيز ملف التقويم. افتحه لإضافة المهام وتنبيهاتها إلى تقويم جوالك.')}
-
 
 /* ---------- نسخة احتياطية ومزامنة يدوية ---------- */
 function bk(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({v:1,tasks,notes})],{type:'application/json'}));a.download='nasaq-backup.json';document.body.appendChild(a);a.click();a.remove();toast('تم تجهيز النسخة. أرسلها إلى جهازك الآخر ثم اضغط «استيراد» هناك.')}
@@ -248,6 +253,7 @@ const add=()=>{const v=G('ti').value.trim();if(!v){G('ti').focus();return}
 tasks.push({id:Date.now(),cat:view,sub:s,title:v,date:G('dt').value,time:G('tm').value,done:false,fired:[]});save();check();list()};
 G('ad').onclick=add;G('cal').onclick=()=>dl(items,'nasaq-'+view+'.ics');G('ti').onkeydown=e=>{if(e.key==='Enter')add()};
 G('nt').oninput=e=>{notes[view]=e.target.value;save()};
+{const e=G('dt'),f=()=>e.classList.toggle('has',!!e.value);e.oninput=f;e.onchange=f}
 if(G('fx'))G('fx').onchange=e=>imp(e.target.files[0]);
 $.querySelectorAll('[data-k]').forEach(b=>b.onchange=()=>{tasks.find(x=>x.id==b.dataset.k).done=b.checked;save();list()});
 $.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{tasks=tasks.filter(x=>x.id!=b.dataset.d);save();list()});
