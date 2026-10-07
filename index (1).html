@@ -176,6 +176,7 @@ if(last>=0)notify('تذكير: «'+t.title+'» موعدها '+OFF[last][1])});
 if(ch)save()}
 setInterval(check,30000);
 /* ---------- تصدير إلى تقويم الجوال ---------- */
+const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const ie=x=>String(x).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
 function ics(l){const f=d=>d.getUTCFullYear()+p2(d.getUTCMonth()+1)+p2(d.getUTCDate())+'T'+p2(d.getUTCHours())+p2(d.getUTCMinutes())+'00Z';
 const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//NASAQ//AR//','CALSCALE:GREGORIAN'];
@@ -189,10 +190,10 @@ if(!l.length){toast('لا توجد مهام غير منجزة بتاريخ لإ�
 const n=new Date(),fn=name.replace(/\.ics$/,'')+'-'+p2(n.getHours())+p2(n.getMinutes())+p2(n.getSeconds())+'.ics';
 const blob=new Blob([ics(l)],{type:'text/calendar;charset=utf-8'});
 try{const f=new File([blob],fn,{type:'text/calendar'});
-if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'مهام نسق'});toast('اختر تطبيق «التقويم» لإضافة المهام وتنبيهاتها.');return}}
+if(!IOS&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'مهام نسق'});toast('اختر تطبيق «التقويم» لإضافة المهام وتنبيهاتها.');return}}
 catch(e){if(e&&e.name==='AbortError')return}
 const a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),6e4);
-toast('تم تجهيز ملف التقويم. افتحه لإضافة المهام وتنبيهاتها إلى تقويم جوالك.')}
+toast(IOS?'عند ظهور نافذة «Add to Calendar» اضغطها ثم اختر «إضافة الكل».':'تم تجهيز ملف التقويم. افتحه لإضافة المهام وتنبيهاتها إلى تقويم جوالك.')}
 
 /* ---------- نسخة احتياطية ومزامنة يدوية ---------- */
 function bk(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({v:1,tasks,notes,dones})],{type:'application/json'}));a.download='nasaq-backup.json';document.body.appendChild(a);a.click();a.remove();toast('تم تجهيز النسخة. أرسلها إلى جهازك الآخر ثم اضغط «استيراد» هناك.')}
